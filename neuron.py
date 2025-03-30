@@ -17,6 +17,20 @@ except ImportError:
 
 
 class Neuron:
+    '''
+    how it should work:
+    similiar to dense keras unit, but capable of transferring different data at time - for example
+    stimulatory dopamine and glutamate at once, and inhibitory/mediatory others
+    
+    note, that in __init__ we have max number of input/output connections, and not they values
+    
+    in nature we have only positive concentrations of transmitters, but here they are described by floats. 
+    neuron will contact with another one or effector, if float describing neurotransmitter value will be above 
+    threshold value. 
+    optimization will be applied as a constant 'Q' - float - and total response will be multiplied with Q. same will apply for incoming signals
+    
+    receptor subtypes are omitted for simplicity.
+    '''
     def __init__(self, 
                 adrenaline_i: int = 0, adrenaline_o: int = 0,
                 acetylcholine_i: int = 0, acetylcholine_o: int = 0,
@@ -28,6 +42,7 @@ class Neuron:
                 opioid_i: int = 0, opioid_o: int = 0,
                 serotonin_i: int = 0, serotonin_o: int = 0,
                 norepinephrine_i: int = 0, norepinephrine_o: int = 0):
+        self.Q=cp.ones(shape=(10,2)) # quality factors for input/output transmitter values
         """
         Initialize a Neuron instance with input/output connections for neurotransmitters.
         """
@@ -74,6 +89,7 @@ class Neuron:
         Calculate responses for each neurotransmitter based on rules and set output arrays.
         """
         # Define stimuli and inhibitory rules for each neurotransmitter
+        # note - only glutamate and/or dopamine will be considered "positive output", while others - negative or just auxiliary
         rules = {
             "adrenaline": {
                 "stimuli": ["acetylcholine", "dopamine", "glutamate", "serotonin", "histamine"],
@@ -128,15 +144,27 @@ class Neuron:
                 getattr(self, f"{nt}_o")[:] = response
 
     
-
-    def optimizer(self,neuron_output,true_value):
+    def optimizer(self,callback_value):
+        
         """
-        minimizing the out-true difference function
+        minimizing the out-true difference function.
+        
+        dummy version - currently thinking how should it work. but definitely - each individual neuron should know if it did something wrong
 
         Args:
-            neuron_output (_type_): what we get
-            true_value (_type_): and what we want
-        """
-        pass
+            neuron_input (_type_): what we feed
         
-# to be continued...
+            neuron_output (_type_): what we get
+            
+            callback_value (_type_): and what we want
+            
+        """
+        def sigmoid(value):
+            return 1.0/(1.0+cp.exp(-1.0*value))
+        i=0
+        for nt, data in self.neurotransmitters.items():
+            self.Q[i,:]=sigmoid((data["output"]-data["input"])-callback_value) # this approach means that neuron should amplify data...
+            data["input"]*=self.Q[i,0]
+            data["output"]*=self.Q[i,0]
+            i+=1
+        
