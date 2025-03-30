@@ -149,7 +149,7 @@ class Neuron:
         """
         minimizing the out-true difference function.
         
-        dummy version - currently thinking how should it work. but definitely - each individual neuron should know if it did something wrong
+        
 
         Args:
             neuron_input (_type_): what we feed
@@ -160,11 +160,31 @@ class Neuron:
             
         """
         def sigmoid(value):
-            return 1.0/(1.0+cp.exp(-1.0*value))
+            return 1.0/(1.0+cp.exp(-1.0*value))+1.0
         i=0
         for nt, data in self.neurotransmitters.items():
             self.Q[i,:]=sigmoid((data["output"]-data["input"])-callback_value) # this approach means that neuron should amplify data...
             data["input"]*=self.Q[i,0]
             data["output"]*=self.Q[i,0]
             i+=1
+    def threshold(self):
+        self.thresholds=cp.ones_like(self.Q)
+        i=0
+        for nt, data in self.neurotransmitters.items():
+            self.thresholds[i,0]*=data["input"]
+            self.thresholds[i,1]*=data["output"]
+            i+=1
+        self.optimizer()
+        i=0
+        for nt, data in self.neurotransmitters.items():
+            if data["input"]>self.thresholds[i,0]:
+                self.response()
+            else:
+                data["output"]=0.0
+            i+=1
+            
         
+        
+    def IOstream(self):
+        pass     
+        # to be continued
