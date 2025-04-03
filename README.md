@@ -19,3 +19,5 @@ here is a trial - still under developement, but first results are promising.
 
 
 please note, that network complexity can be very high.
+
+One can make many networks in one code, and this networks could act independently - like fpga
