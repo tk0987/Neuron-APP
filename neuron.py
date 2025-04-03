@@ -182,7 +182,7 @@ class Neuron():
         
         i=0
         for nt, data in self.neurotransmitters.items():
-            self.Q[i,:]=sigmoid((data["output"]-data["input"])-callback_value) # this approach means that neuron should amplify data...
+            self.Q[i,:]=sigmoid(((data["output"]-data["input"])**2-callback_value**2)**3) # this approach means that neuron should amplify data...
             data["input"]*=self.Q[i,0]
             data["output"]*=self.Q[i,1]
             i+=1
@@ -210,10 +210,10 @@ class Neuron():
         # 
 
 # assume we have only 1 sensor
-sensor_data=2.0
-callback_val=1.0
+sensor_data=1.0
+callback_val=1.1
 #   declaration of neurons - sample usage
-module1=Neuron(dopamine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1,callback_val=callback_val)
+module1=Neuron(acetylcholine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1,callback_val=callback_val)
 module2=Neuron(opioid_i=1,dopamine_i=1,acetylcholine_i=1,dopamine_o=1,opioid_o=1,callback_val=callback_val)
 module3=Neuron(norepinephrine_i=1,dopamine_i=1,dopamine_o=1,acetylcholine_i=1,acetylcholine_o=1,opioid_o=1,callback_val=callback_val)
 module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1,callback_val=callback_val)
@@ -225,17 +225,20 @@ def expa(val): # dummy response for network action
     return cp.exp(-val/2)
 
 for i in range(1000):
-    module1.dopamine_i[0]=sensor_data
+    module1.acetylcholine_i[0]=sensor_data
     module2.dopamine_i[0],module2.opioid_i[0],module2.acetylcholine_i[0],module3.norepinephrine_i[0],module3.dopamine_i[0],module3.acetylcholine_i[0]=\
     module1.dopamine_o[0],module1.opioid_o[0],module1.acetylcholine_o[0],module1.norepinephrine_o[0],module1.dopamine_o[1],module1.acetylcholine_o[1]
     
     module_final.opioid_i[0],module_final.opioid_i[1],module_final.dopamine_i[0],module_final.dopamine_i[1],module_final.acetylcholine_i[0]=\
     module2.opioid_o[0],module3.opioid_o[0],module3.dopamine_o[0],module2.dopamine_o[0],module3.acetylcholine_o[0]
     out=module_final.dopamine_o[0]
-    sensor_data=i-cp.exp(i/1000)
+    sensor_data=0.5*out+0.5*callback_val
+    # callback_val-=0.1
     module1.threshold()
     module2.threshold()
     module3.threshold()
     module_final.threshold()
-    print(sensor_data,'\t',i,out)
+    print(i,sensor_data,callback_val,out)
+    if i%20==0:
+        callback_val+=10
     
