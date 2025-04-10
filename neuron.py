@@ -201,6 +201,33 @@ class Neuron():
             else:
                 data["output"]=0.0
             i+=1
+            
+    def backpropagate(self, target_value):
+        """
+        Perform backpropagation to update quality factors (Q) based on the error.
+        Args:
+            target_value: The desired output value (callback_val).
+        """
+        learning_rate = 0.01  # Define a learning rate for adjustments
+
+        i = 0
+        for nt, data in self.neurotransmitters.items():
+            # Calculate the error: difference between output and target
+            output_error = data["output"] - target_value
+            
+            # Compute gradients for Q based on the error
+            dQ_input = 2 * output_error * data["input"]  # Gradient w.r.t input
+            dQ_output = 2 * output_error * data["output"]  # Gradient w.r.t output
+
+            # Update Q using gradients
+            self.Q[i, 0] -= learning_rate * dQ_input
+            self.Q[i, 1] -= learning_rate * dQ_output
+            
+            # Clip Q values to avoid extreme changes (optional)
+            self.Q = cp.clip(self.Q, 0.1, 10.0)
+
+            i += 1
+
         
         
         # 
@@ -221,24 +248,33 @@ module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1,callb
 
 print(sensor_data)
 
-def expa(val): # dummy response for network action
-    return cp.exp(-val/2)
 
 for i in range(1000):
-    module1.acetylcholine_i[0]=sensor_data
-    module2.dopamine_i[0],module2.opioid_i[0],module2.acetylcholine_i[0],module3.norepinephrine_i[0],module3.dopamine_i[0],module3.acetylcholine_i[0]=\
-    module1.dopamine_o[0],module1.opioid_o[0],module1.acetylcholine_o[0],module1.norepinephrine_o[0],module1.dopamine_o[1],module1.acetylcholine_o[1]
-    
-    module_final.opioid_i[0],module_final.opioid_i[1],module_final.dopamine_i[0],module_final.dopamine_i[1],module_final.acetylcholine_i[0]=\
-    module2.opioid_o[0],module3.opioid_o[0],module3.dopamine_o[0],module2.dopamine_o[0],module3.acetylcholine_o[0]
-    out=module_final.dopamine_o[0]
-    sensor_data=0.5*out+0.5*callback_val
-    # callback_val-=0.1
+    module1.acetylcholine_i[0] = sensor_data
+    module2.dopamine_i[0], module2.opioid_i[0], module2.acetylcholine_i[0], \
+    module3.norepinephrine_i[0], module3.dopamine_i[0], module3.acetylcholine_i[0] = \
+        module1.dopamine_o[0], module1.opioid_o[0], module1.acetylcholine_o[0], \
+        module1.norepinephrine_o[0], module1.dopamine_o[1], module1.acetylcholine_o[1]
+
+    module_final.opioid_i[0], module_final.opioid_i[1], \
+    module_final.dopamine_i[0], module_final.dopamine_i[1], module_final.acetylcholine_i[0] = \
+        module2.opioid_o[0], module3.opioid_o[0], module3.dopamine_o[0], \
+        module2.dopamine_o[0], module3.acetylcholine_o[0]
+
+    out = module_final.dopamine_o[0]
+    sensor_data = 0.5 * out + 0.5 * callback_val
+
+    # Backpropagation for each module to minimize the error
+    module1.backpropagate(callback_val)
+    module2.backpropagate(callback_val)
+    module3.backpropagate(callback_val)
+    module_final.backpropagate(callback_val)
+
     module1.threshold()
     module2.threshold()
     module3.threshold()
     module_final.threshold()
-    print(i,sensor_data,callback_val,out)
-    if i%20==0:
-        callback_val+=10
-    
+
+    print(i, sensor_data, callback_val, out)
+    if i % 20 == 0:
+        callback_val += 10
