@@ -1,7 +1,7 @@
 # neuron-ML-tool
 ML tool for various tasks - to be continued
 
-the goal is to script, not compile and have good results. along with to learn something new
+the goal is to script, not compile and still have good results + inference. along with to learn something new
 
 # PROJECT DESCRIPTION
 
@@ -19,6 +19,6 @@ One can make many networks in one code, and this networks could act independentl
 
 # todo:
 
-1. cleanup and tide,
+1. cleanup,
 2. tolerance/sensitization for thresholding [? - or not],
 3. make this on lists without this incredible numpy - for uC
