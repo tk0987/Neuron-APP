@@ -3,11 +3,6 @@ ML tool for various tasks - to be continued
 
 the goal is to script, not compile and have good results. along with to learn something new
 
-todo: 
-1. make auto-linker,
-2. add internal arrays containing prev values for thresholding - tolerance/sinsitization emulation
-
-
 # PROJECT DESCRIPTION
 
 Imagine, that you have just a small python board in application that process sensor data into project response. For example - autonomic vechicle. This ML tool should learn when to turn - without supervision of user.
@@ -21,3 +16,9 @@ here is a trial - still under developement, but first results are promising.
 please note, that network complexity can be very high.
 
 One can make many networks in one code, and this networks could act independently - like fpga
+
+# todo:
+
+1. cleanup and tide,
+2. tolerance/sensitization for thresholding [? - or not],
+3. make this on lists without this incredible numpy - for uC
