@@ -7,7 +7,7 @@ the goal is to script, not compile and still have good results + inference. alon
 
 Perceptron much more biological neuron-like than perceptrons in current use. Within one graph node several networks are connected interacting with each other - within built-in strict rules. And yes...
 
-###One neuron from this project CAN be XOR gate.
+# One neuron from this project CAN be XOR gate.
 
 Imagine, that you have just a small python board in application that process sensor data into project response. For example - autonomic vechicle. This ML tool should learn when to turn - without supervision of user.
 It should be also light for very low inference times on uC. 
