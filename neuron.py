@@ -14,7 +14,7 @@ try:
     import cupy as cp
 except ImportError:
     import numpy as cp
-
+import pickle
 
 class Neuron():
     '''
@@ -244,7 +244,18 @@ class Neuron():
 
             # Optional: clip extremes
             self.Q[i, :] = cp.clip(self.Q[i, :], 0.1, 10.0)
+    def save(self,path):
 
+        # Save your neuron network to a binary file
+        with open(path, "wb") as f:
+            pickle.dump(self, f)
+    
+    @staticmethod
+    def load(self):
+
+        with open("neuron_network.pkl", "rb") as f:
+            neuron = pickle.load(f)
+        return neuron
 
 
 '''        
