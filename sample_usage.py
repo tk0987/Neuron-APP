@@ -66,8 +66,14 @@ for i in range(6):
             n.Neuron.connect_neurons(
                 third_layout[f"var3_{i}"], second_layout[f"var2_{j}"], nt
             )
-# this will be training...
+            
+# this will be training... soon...
+data=np.zeros_like(inputs)
+processed=np.zeros_like(outputs)
 
+for i in range(len(inputs)):
+    inputs[i]=data[i]
+    
 for neuron in first_layout.values():
     neuron.backpropagate(callback_val)
     neuron.threshold()
@@ -79,3 +85,5 @@ for neuron in second_layout.values():
 for neuron in third_layout.values():
     neuron.backpropagate(callback_val)
     neuron.threshold()
+for i in range(len(outputs)):
+    processed[i]=outputs[i]
