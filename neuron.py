@@ -251,12 +251,22 @@ class Neuron():
             pickle.dump(self, f)
     
     @staticmethod
-    def load(self):
+    def load():
 
         with open("neuron_network.pkl", "rb") as f:
             neuron = pickle.load(f)
         return neuron
+    @staticmethod
+    def connect_neurons(source, target, neurotransmitter):
+        """
+        Connects the output values of 'source' neuron to the input of 'target' neuron via a specific neurotransmitter.
+        """
+        source_output = getattr(source, f"{neurotransmitter}_o")
+        target_input = getattr(target, f"{neurotransmitter}_i")
 
+        # Clip or broadcast if sizes differ
+        min_len = min(len(source_output), len(target_input))
+        target_input[:min_len] += source_output[:min_len]
 
 '''        
         
