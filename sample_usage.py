@@ -21,13 +21,14 @@ callback_val=0 # to be added from data
 
 first_layout={}
 for _ in range(6):
-    first_layout[f"var1_{_}"] = n.Neuron(norepinephrine_i=1,norepinephrine_o=1,acetylcholine_i=5,acetylcholine_o=6,gaba_i=5,gaba_o=6,opioid_o=2)
+    first_layout[f"var1_{_}"] = n.Neuron(norepinephrine_i=1,norepinephrine_o=1,acetylcholine_i=5,acetylcholine_o=6,gaba_i=5,gaba_o=6,opioid_o=2,history=12)
 second_layout={}
 for _ in range(12):
-    second_layout[f"var2_{_}"]=n.Neuron(norepinephrine_i=1,norepinephrine_o=4,glutamate_i=6,glutamate_o=12,acetylcholine_i=6,acetylcholine_o=6,gaba_i=6,gaba_o=12,opioid_i=2,opioid_o=4)
+    second_layout[f"var2_{_}"]=n.Neuron(norepinephrine_i=1,norepinephrine_o=4,glutamate_i=6,glutamate_o=12,acetylcholine_i=6, \ 
+                                        acetylcholine_o=6,gaba_i=6,gaba_o=12,opioid_i=2,opioid_o=4,history=24)
 third_layout={}
 for _ in range(6):
-    third_layout[f"var3_{_}"] = n.Neuron(norepinephrine_i=4,glutamate_i=12,glutamate_o=6,acetylcholine_i=6,gaba_i=6,opioid_i=4)
+    third_layout[f"var3_{_}"] = n.Neuron(norepinephrine_i=4,glutamate_i=12,glutamate_o=6,acetylcholine_i=6,gaba_i=6,opioid_i=4,history=56)
 
 # input and output:
 inputs = []
