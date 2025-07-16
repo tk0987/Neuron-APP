@@ -40,7 +40,7 @@ So, we have 9 perceptrons just in one neuron. Those perceptrons are interconnect
                     "inhibitory": ["gaba", "opioid", "glycine"]
                 },
             
-Stimuli means that the floating point numbers, inputs of noradrenaline network will be increased by ach, dopamine, glutamate, serotonin and histamine - not only activation function. Their value will be also downgraded by gaba, opioid and glycine networks values.
+Stimuli means that the floating point numbers, inputs of noradrenaline network will be increased by ach, dopamine, glutamate, serotonin and histamine - not only activation function. Numbers values, carried in norepinephrine net, will be also downgraded by gaba, opioid and glycine networks values.
 So: assume, norepinephrine has 2.0 on input. Theres also dopamine with value of 3, and gaba with value of 4. It means, that norepinephrine final output will be smaller (!) than after simple activation function - gaba (inhibitor) has bigger value than dopamine stimuli.
 
 Therefore - each single neuron can act as XOR gate (and even more).
