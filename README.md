@@ -34,10 +34,12 @@ Well. Each neuron is just like perceptrons - multiple just in one node. Those pe
                 ):
 
 So, we have 9 perceptrons just in one neuron. Those perceptrons are interconnected inside of neuron (node) WITH STRICT RULES. Example: noradrenaline:
-"norepinephrine": {
-                "stimuli": ["acetylcholine", "dopamine", "glutamate", "serotonin", "histamine"],
-                "inhibitory": ["gaba", "opioid", "glycine"]
-            },
+
+    "norepinephrine": {
+                    "stimuli": ["acetylcholine", "dopamine", "glutamate", "serotonin", "histamine"],
+                    "inhibitory": ["gaba", "opioid", "glycine"]
+                },
+            
 Stimuli means that the floating point numbers, inputs of noradrenaline network will be increased by ach, dopamine, glutamate, serotonin and histamine - not only activation function. Their value will be also downgraded by gaba, opioid and glycine networks values.
 So: assume, norepinephrine has 2.0 on input. Theres also dopamine with value of 3, and gaba with value of 4. It means, that norepinephrine final output will be smaller (!) than after simple activation function - gaba (inhibitor) has bigger value than dopamine stimuli.
 
