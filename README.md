@@ -48,6 +48,9 @@ Therefore - each single neuron can act as XOR gate (and even more).
 Whats important - the degree of influence by other networks adjusts during training. Same for threshold and activation - as output is thresholded.
 
 Each neuron has memory, denoted by 'history' variable. History is just a list of previous transmitter values, and it take part in learning process, introducing hysteresis.
+In real world cells, memory can be at DNA level - for example if g-protein activated certain genes, altering transmitter production at output. It can be also increase/decrease in receptor numbers at input, due to sensitization/tolerance developement. 
+
+Here number of receptors is stable, but their response differs. It would be nice to code net with floating internal structure over time - not predefined like here. I hope I ll do it some day.
 
 Callback_val is very important - it is the network goal to achieve. Just like in robots - callback_val can be desired sensor value. The net 'll learn to achieve that.
 
