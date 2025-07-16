@@ -45,7 +45,7 @@ So: assume, norepinephrine has 2.0 on input. Theres also dopamine with value of 
 
 Therefore - each single neuron can act as XOR gate (and even more).
 
-Whats important - the degree of influence by other networks adjusts during training. Same for threshold for activation - as it is thresholded.
+Whats important - the degree of influence by other networks adjusts during training. Same for threshold and activation - as output is thresholded.
 
 Each neuron has memory, denoted by 'history' variable. History is just a list of previous transmitter values, and it take part in learning process, introducing hysteresis.
 
