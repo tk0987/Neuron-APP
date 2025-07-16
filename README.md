@@ -1,7 +1,7 @@
 # APP - Advanced Perceptron Project
 ML tool for various tasks - to be continued
 
-the goal is to script, not compile and still have good results + inference. along with to learn something new
+the goal is to script and still have good results + inference. along with to learn something new. one can even create neuron instance(s) and save is as binary - then load.
 
 1. PROJECT DESCRIPTION
 
