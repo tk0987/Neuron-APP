@@ -1,4 +1,4 @@
-# APP - Advanced Perceptron Project
+# Neuron APP - Advanced Perceptron Project
 ML tool for various tasks - to be continued
 
 the goal is to script and still have good results + inference. along with to learn something new. one can even create neuron instance(s) and save is as binary - then load.
