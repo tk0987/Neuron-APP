@@ -40,7 +40,7 @@ class Neuron():
                 glycine_i: int = 0, glycine_o: int = 0,
                 histamine_i: int = 0, histamine_o: int = 0,
                 opioid_i: int = 0, opioid_o: int = 0,
-                serotonin_i: int = 0, serotonin_o: int = 0, callback_val=None, history: int = 16
+                serotonin_i: int = 0, serotonin_o: int = 0, history: int = 16
                 ):
         self.Q=cp.ones(shape=(10,2)) # quality factors for input/output transmitter values
         """
@@ -80,7 +80,7 @@ class Neuron():
         self.serotonin_i = cp.zeros(serotonin_i)
         self.serotonin_o = cp.zeros(serotonin_o)
         
-        self.callback=callback_val
+        
         self.history_index = {nt: 0 for nt in self.neurotransmitters}
         # Validate inputs
         if any(cp.any(getattr(self, f"{nt}_i")) < 0 or cp.any(getattr(self, f"{nt}_o")) < 0 for nt in self.neurotransmitters):
@@ -183,7 +183,7 @@ class Neuron():
     def optimizer(self, loss):
         def sigmoid(value):
             value = cp.asarray(value)
-            value = cp.clip(value, -500, 500)
+            # value = cp.clip(value, -500, 500)
             return 1.0 / (1.0 + cp.exp(-value)) + 1.0
 
         loss = cp.asarray(loss)
@@ -194,25 +194,25 @@ class Neuron():
             input_arr = cp.asarray(data["input"])
             output_arr = cp.asarray(data["output"])
 
-            input_val = input_arr if input_arr.ndim > 0 else cp.asarray([float(input_arr)])
-            output_val = output_arr if output_arr.ndim > 0 else cp.asarray([float(output_arr)])
+            input_val = input_arr*self.Q[i,0] if input_arr.ndim > 0 else cp.asarray([float(input_arr)])*self.Q[i,0]
+            output_val = output_arr*self.Q[i,1] if output_arr.ndim > 0 else cp.asarray([float(output_arr)])*self.Q[i,1]
 
             # Apply per-receptor loss delta
-            delta_in = cp.power(input_val - loss[i], 2)
-            delta_out = cp.power(output_val - loss[i], 2)
+            delta_in = (input_val - loss[i]) ** 2
+            delta_out = (output_val - loss[i]) ** 2
 
-            # Apply sigmoid to each receptor
-            q_in = sigmoid(delta_in)
-            q_out = sigmoid(delta_out)
+            # Apply sigmoid scaled inversely by Q (less certain = steeper adaptation)
+            q_in = sigmoid(delta_in / (self.Q[i, 0] + 1e-8))
+            q_out = sigmoid(delta_out / (self.Q[i, 1] + 1e-8))
 
-            # Aggregate into mean quality per receptor group
             self.Q[i, 0] = float(cp.mean(q_out))
             self.Q[i, 1] = float(cp.mean(q_in))
+
 
             
     def backpropagate(self, loss):
         self.callback = loss
-        learning_rate = 0.01
+        learning_rate = 0.001
         loss = cp.asarray(loss)
 
         # Broadcast scalar loss to match neurotransmitter count
@@ -220,18 +220,30 @@ class Neuron():
             loss = cp.full((len(self.neurotransmitters),), loss)
 
         for i, (nt, data) in enumerate(self.neurotransmitters.items()):
-            output_val = cp.mean(data["output"]) if hasattr(data["output"], "__len__") else float(data["output"])
+            output_val = cp.asarray(data["output"])
+            if not hasattr(output_val, "__len__"):
+                output_val = cp.asarray([float(output_val)])
 
-            # Use shared loss signal instead of target matching
-            error = loss[i]  # ← treating loss as direct modulation
+            error = loss[i]
 
-            averaged_input = cp.mean(self.input_history[nt])
+            if self.input_history.get(nt) is not None:
+                input_history = self.input_history[nt]
+                weighted_input = input_history * self.Q[i, 0]
+                averaged_input = cp.mean(weighted_input)
+            else:
+                averaged_input = 0.0
 
-            dQ_input = cp.mean(2 * error * averaged_input)
-            dQ_output = cp.mean(2 * error * output_val)
+            weighted_output = cp.mean(output_val * self.Q[i, 1])
+            
+            dQ_input = 2 * error * averaged_input
+            dQ_output = 2 * error * weighted_output
 
-            self.Q[i, 0] += learning_rate * dQ_input
-            self.Q[i, 1] += learning_rate * dQ_output
+            self.Q[i, 0] -= learning_rate * dQ_input
+            self.Q[i, 1] -= learning_rate * dQ_output
+
+        # print(self.Q)
+            
+            
 
         self.update_input_history()
 
@@ -281,12 +293,12 @@ class Neuron():
 
 # assume we have only 1 sensor
 sensor_data=1.0
-callback_val=1.1
+loss=1.1
 #   declaration of neurons - sample usage
-module1=Neuron(acetylcholine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1,callback_val=callback_val)
-module2=Neuron(opioid_i=1,dopamine_i=1,acetylcholine_i=1,dopamine_o=1,opioid_o=1,callback_val=callback_val)
-module3=Neuron(norepinephrine_i=1,dopamine_i=1,dopamine_o=1,acetylcholine_i=1,acetylcholine_o=1,opioid_o=1,callback_val=callback_val)
-module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1,callback_val=callback_val)
+module1=Neuron(acetylcholine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1,loss=loss)
+module2=Neuron(opioid_i=1,dopamine_i=1,acetylcholine_i=1,dopamine_o=1,opioid_o=1,loss=loss)
+module3=Neuron(norepinephrine_i=1,dopamine_i=1,dopamine_o=1,acetylcholine_i=1,acetylcholine_o=1,opioid_o=1,loss=loss)
+module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1,loss=loss)
 # Connections now, yeah - i'll make it easier, maybe someday... all inside loop
 
 print(sensor_data)
@@ -307,20 +319,20 @@ for i in range(1000):
         module2.dopamine_o[0], module3.acetylcholine_o[0]
 
     out = module_final.dopamine_o[0]
-    sensor_data = 0.5 * out + 0.5 * callback_val
+    sensor_data = 0.5 * out + 0.5 * loss
 
     # Backpropagation for each module to minimize the error
-    module1.backpropagate(callback_val)
-    module2.backpropagate(callback_val)
-    module3.backpropagate(callback_val)
-    module_final.backpropagate(callback_val)
+    module1.backpropagate(loss)
+    module2.backpropagate(loss)
+    module3.backpropagate(loss)
+    module_final.backpropagate(loss)
 
     module1.threshold()
     module2.threshold()
     module3.threshold()
     module_final.threshold()
 
-    print(i, sensor_data, callback_val, out)
+    print(i, sensor_data, loss, out)
     if i % 20 == 0:
-        callback_val += 10
+        loss += 10
 '''
