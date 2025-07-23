@@ -159,3 +159,17 @@ If you dont want to manually connect them, you can use static method built-in Ne
 this static neuron.Neuron.connect_neurons() method is forming connections kinda like connections between two tf.keras.layers.Dense(). It connects all-with-all, but only transmitter-wise, so opioid cannot be connected with gaba.
 
 Of course, you can manually connect e.g. dopamine with serotonine, but... it is heresy. Do not do that - it will work, most probably, but keep it clean, please!
+
+    # ============+++++++++++++++++++++++================
+    #
+    #                WHEN TO USE THIS
+    #
+    # ============+++++++++++++++++++++++================
+
+Yes - the most important part, something so vivid (for the author only), that I forgot to write about this.
+
+Network returns compensative response for input - using loss. It returns a change which is needed to improve current state.
+
+It is well-suited for sensor reading compensation, like in autonomic machines. Most probably it could be used for denoising, encoding, and so on - but, really - it is hard thing to work with. It needs time.
+
+For example you can compute loss as a discrepancy between desired state (drone oriented horizontally, accel shows acceleration down) and current state - yaw, pitch, roll. And the net will return the change needed for acquiring desired state.
