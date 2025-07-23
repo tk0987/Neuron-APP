@@ -10,10 +10,10 @@ author: T. Kowalski
 """
 
 # import sys
-try:
-    import cupy as cp
-except ImportError:
-    import numpy as cp
+# try:
+#     import cupy as cp
+# except ImportError:
+import numpy as cp
 import pickle
 
 class Neuron():
@@ -47,7 +47,7 @@ class Neuron():
         Initialize a Neuron instance with input/output connections for neurotransmitters.
         """
         
-        self.history_index = {nt: 0 for nt in self.neurotransmitters}
+       
 
         self.neurotransmitters = {
             "norepinephrine": {"input": norepinephrine_i, "output": norepinephrine_o},
@@ -81,6 +81,7 @@ class Neuron():
         self.serotonin_o = cp.zeros(serotonin_o)
         
         self.callback=callback_val
+        self.history_index = {nt: 0 for nt in self.neurotransmitters}
         # Validate inputs
         if any(cp.any(getattr(self, f"{nt}_i")) < 0 or cp.any(getattr(self, f"{nt}_o")) < 0 for nt in self.neurotransmitters):
             raise ValueError("Input/output counts for neurotransmitters must be non-negative integers.")
@@ -105,7 +106,7 @@ class Neuron():
             setattr(self, f"{nt}_o", cp.zeros(counts["output"]))  # Always create the output array
         self.history_size = history  # Length of input memory
         self.input_history = {
-            nt: cp.zeros((self.history_size, counts["input"])) if counts["input"] > 0 else None
+            nt: cp.zeros((self.history_size, counts["input"]))
             for nt, counts in self.neurotransmitters.items()
         }
 
@@ -179,71 +180,72 @@ class Neuron():
                 idx = self.history_index[nt] % self.history_size
                 self.input_history[nt][idx] = input_array
             self.history_index[nt] += 1    
-    def optimizer(self,callback_value):
-        
-        """
-        minimizing the out-true difference function.
-        
-        
-
-        Args:
-            neuron_input (_type_): what we feed
-        
-            neuron_output (_type_): what we get
-            
-            callback_value (_type_): and what we want
-            
-        """
+    def optimizer(self, loss):
         def sigmoid(value):
-            return 1.0/(1.0+cp.exp(-1.0*value))+1.0
-        
-        i=0
-        for nt, data in self.neurotransmitters.items():
-            self.Q[i,:]=sigmoid(((data["output"]-data["input"])**2-callback_value**2)**3) # this approach means that neuron should amplify data...
-            data["input"]*=self.Q[i,0]
-            data["output"]*=self.Q[i,1]
-            i+=1
-    def threshold(self):
-        self.update_input_history()
+            value = cp.asarray(value)
+            value = cp.clip(value, -500, 500)
+            return 1.0 / (1.0 + cp.exp(-value)) + 1.0
 
-        self.thresholds=cp.ones_like(self.Q)
-        i=0
-        for nt, data in self.neurotransmitters.items():
-            self.thresholds[i,0]*=data["input"]
-            self.thresholds[i,1]*=data["output"]
-            i+=1
-        self.optimizer(self.callback)
-        i=0
-        for nt, data in self.neurotransmitters.items():
-            if data["input"]>self.thresholds[i,0]:
-                self.response()
-            else:
-                data["output"]=0.0
-            i+=1
-            
-    def backpropagate(self, target_value):
-        """
-        Perform backpropagation using the average of recent input history.
-        """
-        learning_rate = 0.01
+        loss = cp.asarray(loss)
+        if loss.size == 1:
+            loss = cp.full((len(self.neurotransmitters),), loss)
 
         for i, (nt, data) in enumerate(self.neurotransmitters.items()):
-            output_error = data["output"] - target_value
+            input_arr = cp.asarray(data["input"])
+            output_arr = cp.asarray(data["output"])
 
-            # Use averaged input history
-            if self.input_history.get(nt) is not None:
-                averaged_input = cp.mean(self.input_history[nt], axis=0)
-            else:
-                averaged_input = cp.zeros_like(data["input"])
+            input_val = input_arr if input_arr.ndim > 0 else cp.asarray([float(input_arr)])
+            output_val = output_arr if output_arr.ndim > 0 else cp.asarray([float(output_arr)])
 
-            dQ_input = 2 * output_error * averaged_input
-            dQ_output = 2 * output_error * data["output"]
+            # Apply per-receptor loss delta
+            delta_in = cp.power(input_val - loss[i], 2)
+            delta_out = cp.power(output_val - loss[i], 2)
 
-            self.Q[i, 0] -= learning_rate * dQ_input
-            self.Q[i, 1] -= learning_rate * dQ_output
+            # Apply sigmoid to each receptor
+            q_in = sigmoid(delta_in)
+            q_out = sigmoid(delta_out)
 
-            # Optional: clip extremes
-            self.Q[i, :] = cp.clip(self.Q[i, :], 0.1, 10.0)
+            # Aggregate into mean quality per receptor group
+            self.Q[i, 0] = float(cp.mean(q_out))
+            self.Q[i, 1] = float(cp.mean(q_in))
+
+            
+    def backpropagate(self, loss):
+        self.callback = loss
+        learning_rate = 0.01
+        loss = cp.asarray(loss)
+
+        # Broadcast scalar loss to match neurotransmitter count
+        if loss.size == 1:
+            loss = cp.full((len(self.neurotransmitters),), loss)
+
+        for i, (nt, data) in enumerate(self.neurotransmitters.items()):
+            output_val = cp.mean(data["output"]) if hasattr(data["output"], "__len__") else float(data["output"])
+
+            # Use shared loss signal instead of target matching
+            error = loss[i]  # ← treating loss as direct modulation
+
+            averaged_input = cp.mean(self.input_history[nt])
+
+            dQ_input = cp.mean(2 * error * averaged_input)
+            dQ_output = cp.mean(2 * error * output_val)
+
+            self.Q[i, 0] += learning_rate * dQ_input
+            self.Q[i, 1] += learning_rate * dQ_output
+
+        self.update_input_history()
+
+
+
+        self.optimizer(loss)
+
+
+        self.response()
+
+
+
+
+
     def save(self,path):
 
         # Save your neuron network to a binary file
@@ -267,6 +269,7 @@ class Neuron():
         # Clip or broadcast if sizes differ
         min_len = min(len(source_output), len(target_input))
         target_input[:min_len] += source_output[:min_len]
+
 
 '''        
         
