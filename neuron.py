@@ -162,12 +162,12 @@ class Neuron():
 
         # Calculate responses dynamically
         for nt in self.neurotransmitters:
-            stimuli = sum(cp.sum(getattr(self, f"{stim}_i", 0)) for stim in rules[nt]["stimuli"])
-            inhibitory = sum(cp.sum(getattr(self, f"{inh}_i", 0)) for inh in rules[nt]["inhibitory"])
+            stimuli = sum(cp.sum(getattr(self, f"{stim}_i")) for stim in rules[nt]["stimuli"])
+            inhibitory = sum(cp.sum(getattr(self, f"{inh}_i")) for inh in rules[nt]["inhibitory"])
             response = stimuli - inhibitory
 
             # Assign response to output
-            if getattr(self, f"{nt}_o", None) is not None:
+            if getattr(self, f"{nt}_o") is not None:
                 getattr(self, f"{nt}_o")[:] = response
 
     def update_input_history(self):
@@ -175,7 +175,7 @@ class Neuron():
         Store the latest input arrays for each neurotransmitter in fixed-length memory buffers.
         """
         for nt in self.neurotransmitters:
-            input_array = getattr(self, f"{nt}_i", None)
+            input_array = getattr(self, f"{nt}_i")
             if input_array is not None and self.input_history.get(nt) is not None:
                 idx = self.history_index[nt] % self.history_size
                 self.input_history[nt][idx] = input_array
@@ -196,17 +196,20 @@ class Neuron():
 
             input_val = input_arr*self.Q[i,0] if input_arr.ndim > 0 else cp.asarray([float(input_arr)])*self.Q[i,0]
             output_val = output_arr*self.Q[i,1] if output_arr.ndim > 0 else cp.asarray([float(output_arr)])*self.Q[i,1]
+            # print(output_val)
 
             # Apply per-receptor loss delta
             delta_in = (input_val - loss[i]) ** 2
             delta_out = (output_val - loss[i]) ** 2
 
             # Apply sigmoid scaled inversely by Q (less certain = steeper adaptation)
-            q_in = sigmoid(delta_in / (self.Q[i, 0] + 1e-8))
-            q_out = sigmoid(delta_out / (self.Q[i, 1] + 1e-8))
+            q_in = sigmoid(delta_in )
+            q_out = sigmoid(delta_out)
 
             self.Q[i, 0] = float(cp.mean(q_out))
             self.Q[i, 1] = float(cp.mean(q_in))
+            # print(f"Optimizer [{nt}]: Δin={cp.mean(delta_in):.4f}, Δout={cp.mean(delta_out):.4f}, Q_in={self.Q[i,0]:.4f}, Q_out={self.Q[i,1]:.4f}")
+
 
 
             
@@ -226,33 +229,30 @@ class Neuron():
 
             error = loss[i]
 
-            if self.input_history.get(nt) is not None:
-                input_history = self.input_history[nt]
-                weighted_input = input_history * self.Q[i, 0]
-                averaged_input = cp.mean(weighted_input)
-            else:
-                averaged_input = 0.0
+            # if self.input_history.get(nt) is not None:
+            input_history = self.input_history[nt]
+            weighted_input = input_history * self.Q[i, 0]
+            averaged_input = cp.mean(weighted_input)
+            # else:
+                # averaged_input = cp.asarray(data["input"])
 
-            weighted_output = cp.mean(output_val * self.Q[i, 1])
+            weighted_output = output_val * self.Q[i, 1]
             
             dQ_input = 2 * error * averaged_input
             dQ_output = 2 * error * weighted_output
 
-            self.Q[i, 0] -= learning_rate * dQ_input
-            self.Q[i, 1] -= learning_rate * dQ_output
+            self.Q[i, 0] += learning_rate * dQ_input
+            self.Q[i, 1] += learning_rate * dQ_output
 
         # print(self.Q)
             
             
-
+        
         self.update_input_history()
-
-
-
         self.optimizer(loss)
-
-
         self.response()
+
+        
 
 
 
@@ -283,22 +283,22 @@ class Neuron():
         target_input[:min_len] += source_output[:min_len]
 
 
-'''        
+      
         
         # 
         #                   ======================================
         #                              Sample usage trial
         #                   ======================================
         # 
-
+'''
 # assume we have only 1 sensor
 sensor_data=1.0
 loss=1.1
 #   declaration of neurons - sample usage
-module1=Neuron(acetylcholine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1,loss=loss)
-module2=Neuron(opioid_i=1,dopamine_i=1,acetylcholine_i=1,dopamine_o=1,opioid_o=1,loss=loss)
-module3=Neuron(norepinephrine_i=1,dopamine_i=1,dopamine_o=1,acetylcholine_i=1,acetylcholine_o=1,opioid_o=1,loss=loss)
-module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1,loss=loss)
+module1=Neuron(acetylcholine_i=1,dopamine_o=2,acetylcholine_o=2,opioid_o=1,norepinephrine_o=1)
+module2=Neuron(opioid_i=1,dopamine_i=1,acetylcholine_i=1,dopamine_o=1,opioid_o=1)
+module3=Neuron(norepinephrine_i=1,dopamine_i=1,dopamine_o=1,acetylcholine_i=1,acetylcholine_o=1,opioid_o=1)
+module_final=Neuron(opioid_i=2,dopamine_i=2,acetylcholine_i=1,dopamine_o=1)
 # Connections now, yeah - i'll make it easier, maybe someday... all inside loop
 
 print(sensor_data)
@@ -327,12 +327,12 @@ for i in range(1000):
     module3.backpropagate(loss)
     module_final.backpropagate(loss)
 
-    module1.threshold()
-    module2.threshold()
-    module3.threshold()
-    module_final.threshold()
+    # module1.threshold()
+    # module2.threshold()
+    # module3.threshold()
+    # module_final.threshold()
 
-    print(i, sensor_data, loss, out)
+    print(i,"\t", sensor_data, "\t",loss, "\t",out)
     if i % 20 == 0:
         loss += 10
 '''
