@@ -172,4 +172,4 @@ Network returns compensative response for input - using loss. It returns a chang
 
 It is well-suited for sensor reading compensation, like in autonomic machines. Most probably it could be used for denoising, encoding, and so on - but, really - it is hard thing to work with. It needs time.
 
-For example you can compute loss as a discrepancy between desired state (drone oriented horizontally, accel shows acceleration down) and current state - yaw, pitch, roll. And the net will return the change needed for acquiring desired state.
+For example you can compute loss as a discrepancy between desired state (drone oriented horizontally, accel shows acceleration down) and current state - yaw, pitch, roll. And the net will return a value of the change needed for acquiring desired state.
