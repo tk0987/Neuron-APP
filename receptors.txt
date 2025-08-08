@@ -55,3 +55,98 @@ here is the path the project 'll go in. next to do is just listing interactions 
     "Tachykinin": ["NK1", "NK2", "NK3"]
   }
 }
+
+#=================++++++++++++++++++++++++++=================
+#
+#                      interactions
+#
+#=================++++++++++++++++++++++++++=================
+
+{
+  "AMPA": {
+    "stimuli": ["NMDA", "D1", "5-HT2A", "α1A"],
+    "inhibitory": ["GABA_A", "GABA_B", "CB1", "D2"]
+  },
+  "NMDA": {
+    "stimuli": ["AMPA", "D1", "5-HT2A", "H2"],
+    "inhibitory": ["GABA_A", "5-HT1A", "CB1", "σ1", "GlyR α1"]
+  },
+  "Kainate": {
+    "stimuli": ["AMPA", "mGluR1"],
+    "inhibitory": ["GABA_A"]
+  },
+  "mGluR1": {
+    "stimuli": ["NMDA", "5-HT2A"],
+    "inhibitory": ["GABA_B"]
+  },
+  "mGluR2": {
+    "inhibitory": ["Glutamate release"]
+  },
+  "GABA_A": {
+    "stimuli": ["5-HT1A", "D2", "Mu (μ)"],
+    "inhibitory": ["AMPA", "NMDA", "H1", "NK1"]
+  },
+  "GABA_B": {
+    "stimuli": ["D2", "CB1"],
+    "inhibitory": ["AMPA", "mGluR1", "H2"]
+  },
+  "D1": {
+    "stimuli": ["NMDA", "AMPA", "5-HT2A", "H1"],
+    "inhibitory": ["GABA_A", "D2"]
+  },
+  "D2": {
+    "stimuli": ["GABA_B", "5-HT1A", "H2"],
+    "inhibitory": ["D1", "AMPA"]
+  },
+  "5-HT1A": {
+    "stimuli": ["GABA_A", "D2"],
+    "inhibitory": ["NMDA", "5-HT2A"]
+  },
+  "5-HT2A": {
+    "stimuli": ["D1", "NMDA", "mGluR1"],
+    "inhibitory": ["GABA_A", "5-HT1A"]
+  },
+  "5-HT3": {
+    "stimuli": ["GABAergic interneurons"]
+  },
+  "H1": {
+    "stimuli": ["D1", "5-HT2C"],
+    "inhibitory": ["GABA_A", "MT1"]
+  },
+  "H2": {
+    "stimuli": ["D2", "NMDA"],
+    "inhibitory": ["GABA_B"]
+  },
+  "H3": {
+    "inhibitory": ["H1", "H2"]
+  },
+  "CB1": {
+    "stimuli": ["GABA_B"],
+    "inhibitory": ["NMDA", "AMPA", "Glutamate release"]
+  },
+  "Mu (μ)": {
+    "stimuli": ["GABA_A"],
+    "inhibitory": ["NMDA", "5-HT2A"]
+  },
+  "GlyR α1": {
+    "inhibitory": ["NMDA"]
+  },
+  "α1A": {
+    "stimuli": ["AMPA"]
+  },
+  "α2A": {
+    "inhibitory": ["D1", "5-HT2A"]
+  },
+  "σ1": {
+    "inhibitory": ["NMDA"]
+  },
+  "MT1": {
+    "inhibitory": ["H1"]
+  },
+  "OX1": {
+    "stimuli": ["Histamine release"]
+  },
+  "NK1": {
+    "inhibitory": ["GABA_A"]
+  }
+}
