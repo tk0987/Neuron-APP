@@ -1,0 +1,57 @@
+'''
+here is the path the project 'll go in. next to do is just listing interactions between them all, then encoding it. perceptrons should go better with more detailed approach. 
+'''
+
+{
+  "Glutamate": {
+    "Ionotropic": ["AMPA", "NMDA", "Kainate"],
+    "Metabotropic": ["mGluR1", "mGluR2", "mGluR3", "mGluR4", "mGluR5", "mGluR6", "mGluR7", "mGluR8"]
+  },
+  "GABA": {
+    "Ionotropic": ["GABA_A"],
+    "Metabotropic": ["GABA_B"]
+  },
+  "Dopamine": {
+    "D1-like": ["D1", "D5"],
+    "D2-like": ["D2", "D3", "D4"]
+  },
+  "Serotonin": {
+    "Receptors": [
+      "5-HT1A", "5-HT1B", "5-HT1D", "5-HT1E", "5-HT1F",
+      "5-HT2A", "5-HT2B", "5-HT2C",
+      "5-HT3",
+      "5-HT4", "5-HT5A", "5-HT5B", "5-HT6", "5-HT7"
+    ]
+  },
+  "Acetylcholine": {
+    "Ionotropic": ["nAChR (α1–α10)", "nAChR (β1–β4)", "γ", "δ", "ε"],
+    "Metabotropic": ["M1", "M2", "M3", "M4", "M5"]
+  },
+  "Histamine": {
+    "Receptors": ["H1", "H2", "H3", "H4"]
+  },
+  "Norepinephrine": {
+    "Alpha": ["α1A", "α1B", "α1D", "α2A", "α2B", "α2C"],
+    "Beta": ["β1", "β2", "β3"]
+  },
+  "Opioid": {
+    "Receptors": ["Mu (μ)", "Delta (δ)", "Kappa (κ)", "Nociceptin (ORL1)"]
+  },
+  "Glycine": {
+    "Receptors": ["GlyR α1", "GlyR α2", "GlyR α3", "GlyR α4", "GlyR β"]
+  },
+  "Cannabinoid": {
+    "Receptors": ["CB1", "CB2"]
+  },
+  "Purinergic": {
+    "Ionotropic": ["P2X1", "P2X2", "P2X3", "P2X4", "P2X5", "P2X6", "P2X7"],
+    "Metabotropic": ["P2Y1", "P2Y2", "P2Y4", "P2Y6", "P2Y11", "P2Y12", "P2Y13", "P2Y14"]
+  },
+  "Other": {
+    "TRP": ["TRPV1"],
+    "Sigma": ["σ1", "σ2"],
+    "Melatonin": ["MT1", "MT2"],
+    "Orexin": ["OX1", "OX2"],
+    "Tachykinin": ["NK1", "NK2", "NK3"]
+  }
+}
