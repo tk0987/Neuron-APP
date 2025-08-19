@@ -137,19 +137,18 @@ These above are just main transmitters and their receptors - the first part to b
               
 
 
-So, we have 9 perceptrons just in one neuron. Those perceptrons are interconnected inside of neuron (node) WITH STRICT RULES. Example: noradrenaline:
+So, we have 14 main networks just in one neuron, and available subnets are the receptor types number: 92. Those perceptrons are interconnected inside of neuron (node) WITH STRICT RULES. Example: noradrenaline (alpha receptors):
 
-    "norepinephrine": {
-                    "stimuli": ["acetylcholine", "dopamine", "glutamate", "serotonin", "histamine"],
-                    "inhibitory": ["gaba", "opioid", "glycine"]
-                },
+        "alpha1A": {"stimuli": ["AMPA"]},
+        "alpha2A": {"inhibitory": ["D1", "5-HT2A"]},
             
-Stimuli means that the floating point numbers, inputs of noradrenaline network will be increased by ach, dopamine, glutamate, serotonin and histamine - not only activation function. Numbers values, carried in norepinephrine net, will be also downgraded by gaba, opioid and glycine networks values.
-So: assume, norepinephrine has 2.0 on input. Theres also dopamine with value of 3, and gaba with value of 4. It means, that norepinephrine final output will be smaller (!) than after simple activation function - gaba (inhibitor) has bigger value than dopamine stimuli.
+Stimuli and inhibitory means that the floating point numbers, inputs of noradrenaline network will be increased by ampa, and decreased by d1 and 5-ht2a - not only activation function is taken into the count.
+
+So: assume, alpha1A has 2.0 on input. Theres also AMPA with value of 3, and D1 with value of 4. It means, that norepinephrine final output will be smaller (!) than after simple activation function - D1 (inhibitor) has bigger value than AMPA stimuli.
 
 Therefore - each single neuron can act as XOR gate (and even more).
 
-Whats important - the degree of influence by other networks adjusts during training. Same for threshold and activation - as output is thresholded.
+Whats important - the degree of influence by other networks adjusts during training.
 
 Each neuron has memory, denoted by 'history' variable. History is just a list of previous transmitter values, and it take part in learning process, introducing hysteresis.
 In real world cells, memory can be at DNA level - for example if g-protein activated certain genes, altering transmitter production at output. It can be also increase/decrease in receptor numbers at input, due to sensitization/tolerance developement. 
