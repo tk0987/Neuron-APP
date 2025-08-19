@@ -17,8 +17,8 @@ import numpy as cp
 import pickle
 
 RECEPTOR_RULES = {
-    "AMPA": {"stimuli": ["NMDA", "D1", "5-HT2A", "α1A"], "inhibitory": ["GABA_A", "GABA_B", "CB1", "D2"]},
-    "NMDA": {"stimuli": ["AMPA", "D1", "5-HT2A", "H2"], "inhibitory": ["GABA_A", "5-HT1A", "CB1", "σ1", "GlyR α1"]},
+    "AMPA": {"stimuli": ["NMDA", "D1", "5-HT2A", "alpha1A"], "inhibitory": ["GABA_A", "GABA_B", "CB1", "D2"]},
+    "NMDA": {"stimuli": ["AMPA", "D1", "5-HT2A", "H2"], "inhibitory": ["GABA_A", "5-HT1A", "CB1", "sigma1", "GlyR alpha1"]},
     "Kainate": {"stimuli": ["AMPA", "mGluR1"], "inhibitory": ["GABA_A"]},
     "mGluR1": {"stimuli": ["NMDA", "5-HT2A"], "inhibitory": ["GABA_B"]},
     "mGluR2": {"inhibitory": ["Glutamate release"]},
@@ -34,10 +34,10 @@ RECEPTOR_RULES = {
     "H3": {"inhibitory": ["H1", "H2"]},
     "CB1": {"stimuli": ["GABA_B"], "inhibitory": ["NMDA", "AMPA", "Glutamate release"]},
     "Mu (μ)": {"stimuli": ["GABA_A"], "inhibitory": ["NMDA", "5-HT2A"]},
-    "GlyR α1": {"inhibitory": ["NMDA"]},
-    "α1A": {"stimuli": ["AMPA"]},
-    "α2A": {"inhibitory": ["D1", "5-HT2A"]},
-    "σ1": {"inhibitory": ["NMDA"]},
+    "GlyR alpha1": {"inhibitory": ["NMDA"]},
+    "alpha1A": {"stimuli": ["AMPA"]},
+    "alpha2A": {"inhibitory": ["D1", "5-HT2A"]},
+    "sigma1": {"inhibitory": ["NMDA"]},
     "MT1": {"inhibitory": ["H1"]},
     "OX1": {"stimuli": ["Histamine release"]},
     "NK1": {"inhibitory": ["GABA_A"]}
@@ -202,7 +202,7 @@ class Neuron:
         
         # 
         #                   ======================================
-        #                              Sample usage
+        #                              Sample usage 
         #                   ======================================
         # 
 
@@ -217,4 +217,5 @@ neuron = Neuron(receptor_config=config)
 neuron.receptors["NMDA"]["input"][:] = cp.array([1.0, 0.5])
 neuron.response()
 print(neuron.receptors["AMPA"]["output"])
+
 '''
