@@ -22,7 +22,7 @@ RECEPTOR_RULES = {
     "Kainate": {"stimuli": ["AMPA", "mGluR1"], "inhibitory": ["GABA_A"]},
     "mGluR1": {"stimuli": ["NMDA", "5-HT2A"], "inhibitory": ["GABA_B"]},
     "mGluR2": {"inhibitory": ["Glutamate release"]},
-    "GABA_A": {"stimuli": ["5-HT1A", "D2", "Mu (μ)"], "inhibitory": ["AMPA", "NMDA", "H1", "NK1"]},
+    "GABA_A": {"stimuli": ["5-HT1A", "D2", "Mu (mi)"], "inhibitory": ["AMPA", "NMDA", "H1", "NK1"]},
     "GABA_B": {"stimuli": ["D2", "CB1"], "inhibitory": ["AMPA", "mGluR1", "H2"]},
     "D1": {"stimuli": ["NMDA", "AMPA", "5-HT2A", "H1"], "inhibitory": ["GABA_A", "D2"]},
     "D2": {"stimuli": ["GABA_B", "5-HT1A", "H2"], "inhibitory": ["D1", "AMPA"]},
@@ -33,7 +33,7 @@ RECEPTOR_RULES = {
     "H2": {"stimuli": ["D2", "NMDA"], "inhibitory": ["GABA_B"]},
     "H3": {"inhibitory": ["H1", "H2"]},
     "CB1": {"stimuli": ["GABA_B"], "inhibitory": ["NMDA", "AMPA", "Glutamate release"]},
-    "Mu (μ)": {"stimuli": ["GABA_A"], "inhibitory": ["NMDA", "5-HT2A"]},
+    "Mu (mi)": {"stimuli": ["GABA_A"], "inhibitory": ["NMDA", "5-HT2A"]},
     "GlyR alpha1": {"inhibitory": ["NMDA"]},
     "alpha1A": {"stimuli": ["AMPA"]},
     "alpha2A": {"inhibitory": ["D1", "5-HT2A"]},
@@ -100,15 +100,13 @@ class Neuron:
                 config["output"][:] = response * self.Q[idx, 1]
 
     def update_input_history(self):
-        """
-        Store the latest input arrays for each neurotransmitter in fixed-length memory buffers.
-        """
-        for nt in self.neurotransmitters:
-            input_array = getattr(self, f"{nt}_i", None)
-            if input_array is not None and self.input_history.get(nt) is not None:
+        for nt, config in self.receptors.items():
+            input_array = config["input"]
+            if input_array is not None and config["history"] is not None:
                 idx = self.history_index[nt] % self.history_size
-                self.input_history[nt][idx] = input_array
-            self.history_index[nt] += 1    
+                config["history"][idx] = input_array
+                self.history_index[nt] += 1
+  
     def optimizer(self,callback_value):
         
         """
@@ -128,28 +126,27 @@ class Neuron:
             return 1.0/(1.0+cp.exp(-1.0*value))+1.0
         
         i=0
-        for nt, data in self.neurotransmitters.items():
-            self.Q[i,:]=sigmoid(((data["output"]-data["input"])**2-callback_value**2)**3) # this approach means that neuron should amplify data...
-            data["input"]*=self.Q[i,0]
-            data["output"]*=self.Q[i,1]
-            i+=1
+        for i, (nt, data) in enumerate(self.receptors.items()):
+            self.Q[i,:] = sigmoid(((data["output"] - data["input"])**2 - callback_value**2)**3)
+            data["input"] *= self.Q[i, 0]
+            data["output"] *= self.Q[i, 1]
+
     def threshold(self):
         self.update_input_history()
+        self.thresholds = cp.ones_like(self.Q)
 
-        self.thresholds=cp.ones_like(self.Q)
-        i=0
-        for nt, data in self.neurotransmitters.items():
-            self.thresholds[i,0]*=data["input"]
-            self.thresholds[i,1]*=data["output"]
-            i+=1
+        for i, (nt, data) in enumerate(self.receptors.items()):
+            self.thresholds[i, 0] *= data["input"]
+            self.thresholds[i, 1] *= data["output"]
+
         self.optimizer(self.callback)
-        i=0
-        for nt, data in self.neurotransmitters.items():
-            if data["input"]>self.thresholds[i,0]:
+
+        for i, (nt, data) in enumerate(self.receptors.items()):
+            if cp.sum(data["input"]) > cp.sum(self.thresholds[i, 0]):
                 self.response()
             else:
-                data["output"]=0.0
-            i+=1
+                data["output"][:] = 0.0
+
             
     def backpropagate(self, target_value):
         """
@@ -157,23 +154,15 @@ class Neuron:
         """
         learning_rate = 0.01
 
-        for i, (nt, data) in enumerate(self.neurotransmitters.items()):
+        for i, (nt, data) in enumerate(self.receptors.items()):
             output_error = data["output"] - target_value
-
-            # Use averaged input history
-            if self.input_history.get(nt) is not None:
-                averaged_input = cp.mean(self.input_history[nt], axis=0)
-            else:
-                averaged_input = cp.zeros_like(data["input"])
-
+            averaged_input = cp.mean(data["history"], axis=0) if data["history"] is not None else cp.zeros_like(data["input"])
             dQ_input = 2 * output_error * averaged_input
             dQ_output = 2 * output_error * data["output"]
-
             self.Q[i, 0] -= learning_rate * dQ_input
             self.Q[i, 1] -= learning_rate * dQ_output
-
-            # Optional: clip extremes
             self.Q[i, :] = cp.clip(self.Q[i, :], 0.1, 10.0)
+
     def save(self,path):
 
         # Save your neuron network to a binary file
@@ -191,8 +180,9 @@ class Neuron:
         """
         Connects the output values of 'source' neuron to the input of 'target' neuron via a specific neurotransmitter.
         """
-        source_output = getattr(source, f"{neurotransmitter}_o")
-        target_input = getattr(target, f"{neurotransmitter}_i")
+        source_output = source.receptors[neurotransmitter]["output"]
+        target_input = target.receptors[neurotransmitter]["input"]
+
 
         # Clip or broadcast if sizes differ
         min_len = min(len(source_output), len(target_input))
