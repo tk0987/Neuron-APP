@@ -76,66 +76,32 @@ Well. Each neuron is just like perceptrons - multiple just in one node. Those pe
     }  
 These above are just main transmitters and their receptors - the first part to be aware of. Some of the receptors are altering function of others - negatively and positively, depending whether they are stimuli/inhibitory. Now the more funny part - the way, how all of those nets are encoded to interact with each other inside single AP - advanced perceptron:
 
-    {
-      "AMPA": {
-        "stimuli": ["NMDA", "D1", "5-HT2A"],
-        "inhibitory": ["GABA_A", "GABA_B"]
-      },
-      "NMDA": {
-        "stimuli": ["AMPA", "D1", "5-HT2A"],
-        "inhibitory": ["GABA_A", "5-HT1A"]
-      },
-      "Kainate": {
-        "stimuli": ["AMPA", "mGluR1"],
-        "inhibitory": ["GABA_A"]
-      },
-      "mGluR1": {
-        "stimuli": ["NMDA", "5-HT2A"],
-        "inhibitory": ["GABA_B"]
-      },
-      "GABA_A": {
-        "stimuli": ["5-HT1A", "D2"],
-        "inhibitory": ["AMPA", "NMDA", "H1"]
-      },
-      "GABA_B": {
-        "stimuli": ["D2", "5-HT1B"],
-        "inhibitory": ["AMPA", "mGluR1"]
-      },
-      "D1": {
-        "stimuli": ["NMDA", "5-HT2A"],
-        "inhibitory": ["GABA_A", "D2"]
-      },
-      "D2": {
-        "stimuli": ["GABA_B", "5-HT1A"],
-        "inhibitory": ["D1", "AMPA"]
-      },
-      "5-HT1A": {
-        "stimuli": ["GABA_A", "D2"],
-        "inhibitory": ["NMDA", "5-HT2A"]
-      },
-      "5-HT2A": {
-        "stimuli": ["D1", "NMDA"],
-        "inhibitory": ["GABA_A", "5-HT1A"]
-      },
-      "H1": {
-        "stimuli": ["D1", "5-HT2C"],
-        "inhibitory": ["GABA_A"]
-      },
-      "H2": {
-        "stimuli": ["D2", "NMDA"],
-        "inhibitory": ["GABA_B"]
-      },
-      "CB1": {
-        "stimuli": ["GABA_B"],
-        "inhibitory": ["NMDA", "AMPA"]
-      },
-      "Mu (μ)": {
-        "stimuli": ["GABA_A"],
-        "inhibitory": ["NMDA", "5-HT2A"]
-      }
-    }
-              
-
+        RECEPTOR_RULES = {
+            "AMPA": {"stimuli": ["NMDA", "D1", "5-HT2A", "alpha1A"], "inhibitory": ["GABA_A", "GABA_B", "CB1", "D2"]},
+            "NMDA": {"stimuli": ["AMPA", "D1", "5-HT2A", "H2"], "inhibitory": ["GABA_A", "5-HT1A", "CB1", "sigma1", "GlyR alpha1"]},
+            "Kainate": {"stimuli": ["AMPA", "mGluR1"], "inhibitory": ["GABA_A"]},
+            "mGluR1": {"stimuli": ["NMDA", "5-HT2A"], "inhibitory": ["GABA_B"]},
+            "mGluR2": {"inhibitory": ["Glutamate release"]},
+            "GABA_A": {"stimuli": ["5-HT1A", "D2", "Mu (mi)"], "inhibitory": ["AMPA", "NMDA", "H1", "NK1"]},
+            "GABA_B": {"stimuli": ["D2", "CB1"], "inhibitory": ["AMPA", "mGluR1", "H2"]},
+            "D1": {"stimuli": ["NMDA", "AMPA", "5-HT2A", "H1"], "inhibitory": ["GABA_A", "D2"]},
+            "D2": {"stimuli": ["GABA_B", "5-HT1A", "H2"], "inhibitory": ["D1", "AMPA"]},
+            "5-HT1A": {"stimuli": ["GABA_A", "D2"], "inhibitory": ["NMDA", "5-HT2A"]},
+            "5-HT2A": {"stimuli": ["D1", "NMDA", "mGluR1"], "inhibitory": ["GABA_A", "5-HT1A"]},
+            "5-HT3": {"stimuli": ["GABAergic interneurons"]},
+            "H1": {"stimuli": ["D1", "5-HT2C"], "inhibitory": ["GABA_A", "MT1"]},
+            "H2": {"stimuli": ["D2", "NMDA"], "inhibitory": ["GABA_B"]},
+            "H3": {"inhibitory": ["H1", "H2"]},
+            "CB1": {"stimuli": ["GABA_B"], "inhibitory": ["NMDA", "AMPA", "Glutamate release"]},
+            "Mu (mi)": {"stimuli": ["GABA_A"], "inhibitory": ["NMDA", "5-HT2A"]},
+            "GlyR alpha1": {"inhibitory": ["NMDA"]},
+            "alpha1A": {"stimuli": ["AMPA"]},
+            "alpha2A": {"inhibitory": ["D1", "5-HT2A"]},
+            "sigma1": {"inhibitory": ["NMDA"]},
+            "MT1": {"inhibitory": ["H1"]},
+            "OX1": {"stimuli": ["Histamine release"]},
+            "NK1": {"inhibitory": ["GABA_A"]}
+        }
 
 So, we have 14 main networks just in one neuron, and available subnets are the receptor types number: 92. Those perceptrons are interconnected inside of neuron (node) WITH STRICT RULES. Example: noradrenaline (alpha receptors):
 
